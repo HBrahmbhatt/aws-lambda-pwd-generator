@@ -1,0 +1,35 @@
+# --- Maven (Build Results) ---
+target/
+*.jar
+*.war
+*.ear
+
+# --- Maven Shade Plugin (Crucial for your project) ---
+# The shade plugin creates this file automatically, and it is annoying if committed.
+dependency-reduced-pom.xml
+
+# --- Eclipse (IDE Settings) ---
+.classpath
+.project
+.settings/
+.metadata/
+bin/
+
+# --- IntelliJ IDEA (If you or others use it) ---
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# --- VS Code ---
+.vscode/
+
+# --- Logs & OS Files ---
+*.log
+.DS_Store
+Thumbs.db
+
+# --- AWS / Serverless (Future proofing) ---
+.aws-sam/
+samconfig.toml
