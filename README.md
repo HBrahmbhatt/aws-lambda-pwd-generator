@@ -1,82 +1,73 @@
-# aws-lambda-springboot-project serverless API
-The aws-lambda-springboot-project project, created with [`aws-serverless-java-container`](https://github.com/aws/serverless-java-container).
+# Serverless Passive-Aggressive Password Generator
 
-The starter project defines a simple `/ping` resource that can accept `GET` requests with its tests.
+Because "password123" is a cry for help.
 
-The project folder also includes a `template.yml` file. You can use this [SAM](https://github.com/awslabs/serverless-application-model) file to deploy the project to AWS Lambda and Amazon API Gateway or test in local with the [SAM CLI](https://github.com/awslabs/aws-sam-cli). 
+This project uses the `aws-serverless-java-container` library to run a full Spring Boot 3 application inside AWS Lambda. It demonstrates how to expose standard HTTP endpoints via AWS Lambda Function URLs without managing a dedicated server or complex API Gateway configuration.
 
-## Pre-requisites
-* [AWS CLI](https://aws.amazon.com/cli/)
-* [SAM CLI](https://github.com/awslabs/aws-sam-cli)
-* [Gradle](https://gradle.org/) or [Maven](https://maven.apache.org/)
+## Features
 
-## Building the project
-You can use the SAM CLI to quickly build the project
-```bash
-$ mvn archetype:generate -DartifactId=aws-lambda-springboot-project -DarchetypeGroupId=com.amazonaws.serverless.archetypes -DarchetypeArtifactId=aws-serverless-jersey-archetype -DarchetypeVersion=2.1.5 -DgroupId=aws-lambda-springboot -Dversion=0.0.1-SNAPSHOT -Dinteractive=false
-$ cd aws-lambda-springboot-project
-$ sam build
-Building resource 'AwsLambdaSpringbootProjectFunction'
-Running JavaGradleWorkflow:GradleBuild
-Running JavaGradleWorkflow:CopyArtifacts
+* **Serverless Architecture:** Runs entirely on AWS Lambda.
+* **Stateless:** Pure Java logic with no database dependency.
+* **REST API:** Exposes endpoints via standard HTTP methods.
+* **Roast Engine:** Returns a commentary string with every generated password.
 
-Build Succeeded
+## Prerequisites
 
-Built Artifacts  : .aws-sam/build
-Built Template   : .aws-sam/build/template.yaml
+* Java 17
+* Maven 3.8+
+* AWS Account
 
-Commands you can use next
-=========================
-[*] Invoke Function: sam local invoke
-[*] Deploy: sam deploy --guided
-```
+## Deployment Guide
 
-## Testing locally with the SAM CLI
+Follow these steps to deploy the application manually using the AWS Console.
 
-From the project root folder - where the `template.yml` file is located - start the API with the SAM CLI.
+### 1. Build the Application
+Clone the repository and build the deployable zip file using Maven.
 
 ```bash
-$ sam local start-api
-
-...
-Mounting com.amazonaws.serverless.archetypes.StreamLambdaHandler::handleRequest (java11) at http://127.0.0.1:3000/{proxy+} [OPTIONS GET HEAD POST PUT DELETE PATCH]
-...
+git clone https://github.com/HBrahmbhatt/aws-lambda-pwd-generator
+cd aws-lambda-pwd-generator
+mvn clean install
 ```
 
-Using a new shell, you can send a test ping request to your API:
 
-```bash
-$ curl -s http://127.0.0.1:3000/ping | python -m json.tool
+### 2. Create the Lambda Function
+1. Log in to the AWS Management Console and navigate to the **Lambda** service.
+2. Click **Create function**.
+3. Select **Author from scratch**.
+4. Enter a **Function name** (e.g., `password-generator`).
+5. Set **Runtime** to **Java 17**.
+6. Set **Architecture** to **x86_64** (or arm64 if you configured your build for it).
+7. Click **Create function**.
 
-{
-    "pong": "Hello, World!"
-}
-``` 
+### 3. Upload Code
+1. Navigate to the **Code** tab.
+2. Click **Upload from** and select **.zip or .jar file**.
+3. Upload the zip/JAR file generated in Step 1.
+4. Click **Save**.
 
-## Deploying to AWS
-To deploy the application in your AWS account, you can use the SAM CLI's guided deployment process and follow the instructions on the screen
+### 4. Configure Runtime Settings
+1. In the **Code** tab, scroll down to **Runtime settings** and click **Edit**.
+2. Change the **Handler** to match your bridge class:
+   `aws_lambda_springboot.aws_lambda_springboot_project.StreamLambdaHandler::handleRequest`
+3. Click **Save**.
 
-```
-$ sam deploy --guided
-```
+### 5. Adjust Memory and Timeout
+Spring Boot requires more resources than the default Lambda settings provide.
 
-Once the deployment is completed, the SAM CLI will print out the stack's outputs, including the new application URL. You can use `curl` or a web browser to make a call to the URL
+1. Navigate to the **Configuration** tab.
+2. Select **General configuration** from the left menu and click **Edit**.
+3. Set **Memory** to **512 MB** (or higher).
+4. Set **Timeout** to **30 seconds**.
+5. Click **Save**.
 
-```
-...
--------------------------------------------------------------------------------------------------------------
-OutputKey-Description                        OutputValue
--------------------------------------------------------------------------------------------------------------
-AwsLambdaSpringbootProjectApi - URL for application            https://xxxxxxxxxx.execute-api.us-west-2.amazonaws.com/Prod/pets
--------------------------------------------------------------------------------------------------------------
-```
+### 6. Enable Public Access
+1. In the **Configuration** tab, select **Function URL** from the left menu.
+2. Click **Create function URL**.
+3. Set **Auth type** to **NONE** (allows public access).
+4. Click **Save**.
 
-Copy the `OutputValue` into a browser or use curl to test your first request:
+### 7. Test
+Copy the **Function URL** provided on the screen and open it in your web browser or Postman app. You should receive a JSON response containing a password and a roast as below.
+<img width="1721" height="700" alt="image" src="https://github.com/user-attachments/assets/0f3d101d-5bee-4072-ba1b-56cdd707cb6f" />
 
-```bash
-$ curl -s https://xxxxxxx.execute-api.us-west-2.amazonaws.com/Prod/ping | python -m json.tool
-
-{
-    "pong": "Hello, World!"
-}
-```
